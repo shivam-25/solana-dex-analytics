@@ -1,0 +1,89 @@
+version: 2
+
+sources:
+  - name: solana_analytics
+    database: solana_analytics
+    schema: solana_analytics
+    tables:
+      - name: trades_raw
+        description: Raw trade data from Solana blockchain
+        columns:
+          - name: signature
+            description: Transaction signature
+          - name: trader
+            description: Wallet address of the trader
+          - name: market
+            description: Market identifier
+          - name: source_mint
+            description: Source token mint address
+          - name: destination_mint
+            description: Destination token mint address
+          - name: amount_in
+            description: Amount of source token
+          - name: amount_out
+            description: Amount of destination token
+          - name: block_timestamp
+            description: Timestamp of the block
+      
+      # Materialized Views for real-time aggregations
+      - name: mv_trader_volume
+        description: Real-time trader volume aggregates (auto-updates on INSERT)
+        columns:
+          - name: trader
+            description: Wallet address
+          - name: trade_count
+            description: Total number of trades
+          - name: total_volume_sol
+            description: Total volume in SOL
+          - name: total_volume_usd
+            description: Total volume in USD
+      
+      - name: mv_market_latest
+        description: Real-time latest market prices (auto-updates on INSERT)
+        columns:
+          - name: market
+            description: Market identifier
+          - name: last_price_a_in_b
+            description: Latest price of token A in token B
+          - name: block_timestamp
+            description: Last update time
+      
+      - name: mv_token_best_price
+        description: Real-time token prices from best liquidity market
+        columns:
+          - name: token_mint
+            description: Token mint address
+          - name: price_sol
+            description: Price in SOL
+          - name: price_usd
+            description: Price in USD
+
+models:
+  - name: stg_trades
+    description: Cleaned and enriched trade data with anchor token identification
+    columns:
+      - name: signature
+        description: Transaction signature
+      - name: trader
+        description: Wallet address of the trader
+      - name: market
+        description: Market identifier
+      - name: anchor_mint
+        description: The anchor token (WSOL, USDC, or USDT) in the trade
+      - name: other_mint
+        description: The non-anchor token in the trade
+      - name: trade_direction
+        description: Whether the trade is a buy or sell (from perspective of non-anchor token)
+      - name: price_sol
+        description: Price of the non-anchor token in SOL
+      - name: price_usd
+        description: Price of the non-anchor token in USD
+      - name: volume_sol
+        description: Trade volume in SOL
+      - name: volume_usd
+        description: Trade volume in USD
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "anchor_mint IS NOT NULL"
+      - dbt_utils.expression_is_true:
+          expression: "trade_direction IN ('buy', 'sell')"

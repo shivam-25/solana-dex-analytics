@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  - name: int_latest_market_prices
+    description: Latest price for each market using ReplacingMergeTree for automatic deduplication
+    config:
+      tags: ['intermediate', 'incremental']
+    columns:
+      - name: market
+        description: Market identifier
+        tests:
+          - not_null
+      - name: mint
+        description: Non-anchor token mint address
+      - name: anchor_mint
+        description: Anchor token mint (WSOL, USDC, or USDT)
+      - name: price_sol
+        description: Price in SOL
+      - name: price_usd
+        description: Price in USD
+      - name: total_liquidity_usd
+        description: Total liquidity in USD
+      - name: block_timestamp
+        description: Timestamp of the trade
+
+  - name: int_market_caps
+    description: Centralized market cap calculations following DRY principle
+    config:
+      tags: ['intermediate', 'view']
+    columns:
+      - name: market
+        description: Market identifier
+      - name: mint
+        description: Token mint address
+      - name: token_supply
+        description: Total token supply
+      - name: market_cap_sol
+        description: Market cap in SOL (calculated once here)
+      - name: market_cap_usd
+        description: Market cap in USD (calculated once here)
+
+  - name: int_liquidity_rankings
+    description: Pre-calculated highest liquidity market for each token
+    config:
+      tags: ['intermediate', 'incremental']
+    columns:
+      - name: mint
+        description: Token mint address
+        tests:
+          - unique
+          - not_null
+      - name: market
+        description: Highest liquidity market for this token
+      - name: total_liquidity_usd
+        description: Maximum liquidity value
+
+  - name: int_trader_aggregates
+    description: Pre-aggregated trader statistics using AggregatingMergeTree
+    config:
+      tags: ['intermediate', 'incremental']
+    columns:
+      - name: trader
+        description: Trader wallet address
+        tests:
+          - not_null
+      - name: buys_state
+        description: Aggregation state for buy count
+      - name: sells_state
+        description: Aggregation state for sell count
+      - name: volume_sol_state
+        description: Aggregation state for SOL volume
+      - name: volume_usd_state
+        description: Aggregation state for USD volume
+
+  - name: int_position_tracking
+    description: Position tracking and PnL calculations using FIFO
+    config:
+      tags: ['intermediate', 'incremental']
+    columns:
+      - name: trader
+        description: Trader wallet address
+      - name: mint
+        description: Token mint address
+      - name: net_position
+        description: Current net position (bought - sold)
+      - name: avg_cost_basis_sol
+        description: Average cost basis in SOL
+      - name: avg_cost_basis_usd
+        description: Average cost basis in USD
+      - name: realized_pnl_sol
+        description: Realized PnL in SOL for this trade
+      - name: realized_pnl_usd
+        description: Realized PnL in USD for this trade

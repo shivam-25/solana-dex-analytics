@@ -1,0 +1,100 @@
+version: 2
+
+models:
+  - name: mart_market_price
+    description: Latest price and market cap for each market (view over int_market_caps)
+    config:
+      tags: ['mart', 'api-ready']
+    tests:
+      - unique:
+          column_name: market
+    columns:
+      - name: mint
+        description: Token mint address
+      - name: market
+        description: Market identifier
+      - name: priceSol
+        description: Current price in SOL
+      - name: priceUsd
+        description: Current price in USD
+      - name: marketCapSol
+        description: Market capitalization in SOL
+      - name: marketCapUsd
+        description: Market capitalization in USD
+      - name: last_updated
+        description: Timestamp of last price update
+
+  - name: mart_token_price
+    description: Latest price for each token from highest liquidity market (view over int_liquidity_rankings)
+    config:
+      tags: ['mart', 'api-ready']
+    tests:
+      - unique:
+          column_name: mint
+    columns:
+      - name: mint
+        description: Token mint address
+      - name: market
+        description: Market identifier (highest liquidity market for this token)
+      - name: priceSol
+        description: Current price in SOL
+      - name: priceUsd
+        description: Current price in USD
+      - name: marketCapSol
+        description: Market capitalization in SOL
+      - name: marketCapUsd
+        description: Market capitalization in USD
+      - name: last_updated
+        description: Timestamp of last price update
+
+  - name: mart_token_pair_price
+    description: Latest price for token pairs from the market with highest liquidity
+    columns:
+      - name: mint
+        description: Non-anchor token mint address
+      - name: market
+        description: Market identifier (highest liquidity market for this pair)
+      - name: mint_a
+        description: First token in pair (alphabetically)
+      - name: mint_b
+        description: Second token in pair (alphabetically)
+      - name: priceSol
+        description: Current price in SOL
+      - name: priceUsd
+        description: Current price in USD
+      - name: marketCapSol
+        description: Market capitalization in SOL
+      - name: marketCapUsd
+        description: Market capitalization in USD
+      - name: last_updated
+        description: Timestamp of last price update
+
+  - name: mart_trader_stats
+    description: Aggregated trading statistics for each trader
+    columns:
+      - name: trader
+        description: Trader wallet address
+      - name: buys
+        description: Total number of buy trades
+      - name: sells
+        description: Total number of sell trades
+      - name: volumeSol
+        description: Total trading volume in SOL
+      - name: volumeUsd
+        description: Total trading volume in USD
+      - name: last_trade_timestamp
+        description: Timestamp of trader's last trade
+
+  - name: mart_trader_pnl
+    description: Realized profit and loss for each trader by token
+    columns:
+      - name: trader
+        description: Trader wallet address
+      - name: mint
+        description: Token mint address
+      - name: realizedPnlSol
+        description: Total realized PnL in SOL
+      - name: realizedPnlUsd
+        description: Total realized PnL in USD
+      - name: last_trade_timestamp
+        description: Timestamp of last trade for this trader-token combination

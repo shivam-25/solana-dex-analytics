@@ -1,0 +1,56 @@
+# dbt
+target/
+dbt_packages/
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.env.local
+clickhouse_data/
+# Docker volumes
+docker/clickhouse/data/
+docker/dbt/target/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+*.log
+
+# Data
+data_loader/*.csv
+data_loader/*.parquet
+*.csv
+!dbt/seeds/*.csv
+
+# Interview/Documentation files to exclude
+INTERVIEW_*.md
+COMPLETE_CRASH_COURSE.md
+SQL_FILES_EXPLAINED.md
+INTERVIEW_CONCEPTS_GUIDE.md

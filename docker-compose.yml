@@ -1,0 +1,47 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: solana-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      - CLICKHOUSE_DB=solana_analytics
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - CLICKHOUSE_PASSWORD=
+    volumes:
+      - ./docker/clickhouse/init.sql:/docker-entrypoint-initdb.d/00_init.sql
+      - ./docker/clickhouse/01_optimized_schema.sql:/docker-entrypoint-initdb.d/01_optimized_schema.sql
+      - ./docker/clickhouse/02_materialized_views.sql:/docker-entrypoint-initdb.d/02_materialized_views.sql
+      - clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dbt:
+    build: ./docker/dbt
+    container_name: solana-dbt
+    environment:
+      - DBT_PROFILES_DIR=/usr/app/dbt
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_PORT=9000
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=
+      - CLICKHOUSE_DATABASE=solana_analytics
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    volumes:
+      - ./dbt:/usr/app/dbt
+    working_dir: /usr/app/dbt
+    entrypoint: ["/bin/bash", "-c", "sleep infinity"]
+
+volumes:
+  clickhouse_data:
