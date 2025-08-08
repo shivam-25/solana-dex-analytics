@@ -1,0 +1,28 @@
+version: 2
+
+seeds:
+  - name: seed_sample_trades
+    description: "Sample Solana DEX trades data for testing"
+    config:
+      column_types:
+        signature: String
+        trader: String
+        slot: UInt64
+        transaction_index: UInt32
+        instruction_index: UInt32
+        market: String
+        dex: String
+        source_mint: String
+        destination_mint: String
+        source_vault: String
+        destination_vault: String
+        amount_in: Decimal128(9)
+        amount_out: Decimal128(9)
+        spot_price_a_in_b: Decimal(38,18)
+        spot_price_b_in_a: Decimal(38,18)
+        sol_usd_price: Decimal(38,18)
+        total_liquidity_a: Decimal128(9)
+        total_liquidity_b: Decimal128(9)
+        total_token_supply_a: Decimal128(9)
+        total_token_supply_b: Decimal128(9)
+        block_timestamp: String

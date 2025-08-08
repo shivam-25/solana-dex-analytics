@@ -20,37 +20,36 @@ models:
     staging:
       +materialized: view
       +schema: staging
-      +pre-hook: "SET max_threads = 8"
-      +pre-hook: "SET use_query_cache = false"  # Don't cache staging
+      +tags: ['staging']
+      +description: 'Staging layer - cleaned and standardized raw data'
+      
     intermediate:
-      +materialized: incremental
-      +schema: intermediate
-      +on_schema_change: append_new_columns
-      +persist_docs:
-        relation: true
-        columns: true
-      +pre-hook: 
-        - "SET max_threads = 16"
-        - "SET max_memory_usage = 10000000000"
-        - "SET optimize_aggregation_in_order = 1"
-        - "SET compile_expressions = 1"
-      +post-hook:
-        - "{% if config.get('materialized') != 'view' %}OPTIMIZE TABLE {{ this }} FINAL{% endif %}"
-      +indexes:
-        - columns: ['market']
-          type: minmax
-        - columns: ['trader']
-          type: minmax
-        - columns: ['mint']
-          type: minmax
+      +materialized: materialized_view
+      +schema: intermediate  
+      +tags: ['intermediate', 'mv']
+      +description: 'Intermediate layer - aggregations using materialized views'
+      +on_schema_change: sync_all_columns
+      
     marts:
       +materialized: view
       +schema: marts
-      +pre-hook:
-        - "SET use_query_cache = true"
-        - "SET query_cache_ttl = 300"
-        - "SET enable_optimize_predicate_expression = 1"
+      +tags: ['marts', 'api']
+      +description: 'Marts layer - business logic and final transformations'
 
+vars:
+  # Token addresses as variables for DRY principle
+  wsol: 'So11111111111111111111111111111111111111112'
+  usdc: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+  usdt: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
+  
+  # Performance settings
+  max_threads: 16
+  max_memory_usage: 10000000000
+  
+  # Data retention
+  staging_retention_days: 7
+  intermediate_retention_days: 30
+  
 seeds:
   solana_analytics:
     +schema: seeds

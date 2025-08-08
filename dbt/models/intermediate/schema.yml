@@ -1,93 +1,69 @@
 version: 2
 
 models:
-  - name: int_latest_market_prices
-    description: Latest price for each market using ReplacingMergeTree for automatic deduplication
+  - name: int_solana_analytics__trader_aggregates
+    description: |
+      Real-time trader aggregates using AggregatingMergeTree.
+      Tracks buy/sell volumes, positions, and average prices per trader-token pair.
     config:
-      tags: ['intermediate', 'incremental']
-    columns:
-      - name: market
-        description: Market identifier
-        tests:
-          - not_null
-      - name: mint
-        description: Non-anchor token mint address
-      - name: anchor_mint
-        description: Anchor token mint (WSOL, USDC, or USDT)
-      - name: price_sol
-        description: Price in SOL
-      - name: price_usd
-        description: Price in USD
-      - name: total_liquidity_usd
-        description: Total liquidity in USD
-      - name: block_timestamp
-        description: Timestamp of the trade
-
-  - name: int_market_caps
-    description: Centralized market cap calculations following DRY principle
-    config:
-      tags: ['intermediate', 'view']
-    columns:
-      - name: market
-        description: Market identifier
-      - name: mint
-        description: Token mint address
-      - name: token_supply
-        description: Total token supply
-      - name: market_cap_sol
-        description: Market cap in SOL (calculated once here)
-      - name: market_cap_usd
-        description: Market cap in USD (calculated once here)
-
-  - name: int_liquidity_rankings
-    description: Pre-calculated highest liquidity market for each token
-    config:
-      tags: ['intermediate', 'incremental']
-    columns:
-      - name: mint
-        description: Token mint address
-        tests:
-          - unique
-          - not_null
-      - name: market
-        description: Highest liquidity market for this token
-      - name: total_liquidity_usd
-        description: Maximum liquidity value
-
-  - name: int_trader_aggregates
-    description: Pre-aggregated trader statistics using AggregatingMergeTree
-    config:
-      tags: ['intermediate', 'incremental']
+      materialized: materialized_view
+      engine: AggregatingMergeTree()
     columns:
       - name: trader
         description: Trader wallet address
         tests:
           - not_null
-      - name: buys_state
-        description: Aggregation state for buy count
-      - name: sells_state
-        description: Aggregation state for sell count
-      - name: volume_sol_state
-        description: Aggregation state for SOL volume
+      
+      - name: other_mint
+        description: Token being traded
+        tests:
+          - not_null
+      
+      - name: trade_count_state
+        description: Aggregated trade count state
+      
       - name: volume_usd_state
-        description: Aggregation state for USD volume
+        description: Aggregated USD volume state
+      
+      - name: tokens_bought_state
+        description: Total tokens bought state
+      
+      - name: tokens_sold_state
+        description: Total tokens sold state
 
-  - name: int_position_tracking
-    description: Position tracking and PnL calculations using FIFO
+  - name: int_solana_analytics__market_prices
+    description: |
+      Real-time market price aggregation using State functions.
+      Maintains aggregated price states for each market.
     config:
-      tags: ['intermediate', 'incremental']
+      materialized: materialized_view
+      engine: AggregatingMergeTree()
     columns:
-      - name: trader
-        description: Trader wallet address
-      - name: mint
+      - name: market
+        description: Market identifier
+        tests:
+          - not_null
+          - unique
+      
+      - name: block_timestamp
+        description: Last update timestamp
+
+  - name: int_solana_analytics__token_prices
+    description: |
+      Token best price by highest liquidity market.
+      Uses AggregatingMergeTree with State functions for aggregation.
+    config:
+      materialized: materialized_view
+      engine: AggregatingMergeTree()
+    columns:
+      - name: token_mint
         description: Token mint address
-      - name: net_position
-        description: Current net position (bought - sold)
-      - name: avg_cost_basis_sol
-        description: Average cost basis in SOL
-      - name: avg_cost_basis_usd
-        description: Average cost basis in USD
-      - name: realized_pnl_sol
-        description: Realized PnL in SOL for this trade
-      - name: realized_pnl_usd
-        description: Realized PnL in USD for this trade
+        tests:
+          - not_null
+          - unique
+      
+      - name: last_updated
+        description: Last price update timestamp
+        tests:
+          - not_null
+
