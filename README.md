@@ -1,6 +1,6 @@
 # Solana DEX Analytics Platform
 
-A production-ready analytics platform for Solana DEX trading data using dbt + ClickHouse, implementing real-time aggregations and serving 5 critical API endpoints with sub-100ms response times.
+An analytics platform for Solana DEX trading data using dbt + ClickHouse, implementing real-time aggregations and serving 5 critical API endpoints with sub-100ms response times.
 
 ## 🚀 Quick Start
 
