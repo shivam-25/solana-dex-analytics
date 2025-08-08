@@ -635,6 +635,10 @@ dbt_assignment/
 │   ├── dbt_project.yml               # dbt configuration
 │   ├── profiles.yml                  # Connection settings
 │   └── .user.yml                     # User preferences
+├── docker/
+│   └── dbt/
+│       ├── Dockerfile                # dbt container image
+│       └── entrypoint.sh             # Container startup script
 ├── docker-compose.yml                # Container orchestration
 ├── Makefile                          # Convenience commands
 ├── .gitignore                        # Git ignore rules

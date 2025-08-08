@@ -6,7 +6,6 @@ services:
       - "8123:8123"  # HTTP interface
       - "9000:9000"  # Native interface
     volumes:
-      - ./docker/clickhouse:/docker-entrypoint-initdb.d
       - clickhouse-data:/var/lib/clickhouse
     environment:
       CLICKHOUSE_DB: solana_analytics
